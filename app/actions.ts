@@ -6,8 +6,6 @@
  */
 
 import { revalidatePath } from 'next/cache';
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import {
   duplicarOrcamento,
   mudarStatus,
@@ -50,22 +48,33 @@ export async function salvarConfigAction(valores: ConfigEstudio): Promise<Respos
   }
 }
 
-export async function salvarLogoAction(nomeArquivo: string, base64: string): Promise<Resposta<string>> {
+/**
+ * O logo é guardado como data URI no próprio banco, não como arquivo.
+ * No app empacotado a pasta de instalação não é gravável, e assim o logo
+ * viaja junto do backup do banco — um arquivo a menos para perder.
+ */
+export async function salvarLogoAction(nomeArquivo: string, dataUri: string): Promise<Resposta<string>> {
   try {
-    const extensao = path.extname(nomeArquivo).toLowerCase();
-    if (!['.png', '.jpg', '.jpeg', '.svg', '.webp'].includes(extensao)) {
-      return { ok: false, erro: 'Formato de logo não suportado (use PNG, JPG, SVG ou WEBP).' };
+    const tipo = /^data:(image\/(png|jpeg|webp));base64,/.exec(dataUri)?.[1];
+    if (!tipo) {
+      return { ok: false, erro: 'Use um PNG, JPG ou WEBP. SVG não é suportado no PDF da proposta.' };
     }
-    const destino = path.join(process.cwd(), 'public', 'brand', `logo${extensao}`);
-    await fs.mkdir(path.dirname(destino), { recursive: true });
-    await fs.writeFile(destino, Buffer.from(base64.split(',').pop() ?? '', 'base64'));
-    const publico = `/brand/logo${extensao}`;
-    salvarConfig({ ...obterConfig(), logoPath: publico });
+    const bytes = Math.ceil(((dataUri.length - dataUri.indexOf(',') - 1) * 3) / 4);
+    if (bytes > 2_000_000) {
+      return { ok: false, erro: `Logo muito pesado (${Math.round(bytes / 1024)} KB). O limite é 2 MB.` };
+    }
+    salvarConfig({ ...obterConfig(), logoPath: dataUri });
     revalidatePath('/config');
-    return { ok: true, dados: publico };
+    return { ok: true, dados: dataUri };
   } catch (e) {
     return { ok: false, erro: mensagemDeErro(e) };
   }
+}
+
+export async function removerLogoAction(): Promise<Resposta> {
+  salvarConfig({ ...obterConfig(), logoPath: null });
+  revalidatePath('/config');
+  return { ok: true };
 }
 
 export async function salvarServicoAction(servico: Servico): Promise<Resposta<Servico>> {

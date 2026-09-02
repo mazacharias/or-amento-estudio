@@ -9,8 +9,6 @@
 
 import * as React from 'react';
 import { Document, Image, Page, Text, View } from '@react-pdf/renderer';
-import fs from 'node:fs';
-import path from 'node:path';
 import { estilos, cores } from './estilos';
 import type { DadosProposta } from './dados';
 import { formatarMoeda, formatarPercentual } from '../money';
@@ -312,12 +310,10 @@ function distribuirPorServico(dados: DadosProposta) {
   });
 }
 
+/** O logo vem do banco como data URI; o @react-pdf desenha direto. */
 function caminhoLogo(logoPath: string | null): string | null {
   if (!logoPath) return null;
-  // SVG não é suportado pelo renderer de imagem do @react-pdf.
-  if (logoPath.endsWith('.svg')) return null;
-  const absoluto = path.join(process.cwd(), 'public', logoPath.replace(/^\//, ''));
-  return fs.existsSync(absoluto) ? absoluto : null;
+  return /^data:image\/(png|jpeg|webp);base64,/.test(logoPath) ? logoPath : null;
 }
 
 export { cores };

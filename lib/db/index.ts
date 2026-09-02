@@ -9,6 +9,7 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from './schema';
+import { DDL } from './ddl';
 import {
   CUSTOS_FIXOS_SEMENTE,
   TEXTO_CONDICOES_PADRAO,
@@ -16,7 +17,16 @@ import {
   servicosIniciais,
 } from './seed-data';
 
-const CAMINHO_BANCO = process.env.ATALHO_DB ?? path.join(process.cwd(), 'data', 'atalho.db');
+/**
+ * Onde os dados moram. No app empacotado o Electron aponta
+ * `ATALHO_DATA_DIR` para a pasta do usuário — o diretório de instalação não é
+ * gravável. Rodando do código-fonte, é `./data`.
+ */
+export function diretorioDeDados(): string {
+  return process.env.ATALHO_DATA_DIR ?? path.join(process.cwd(), 'data');
+}
+
+const CAMINHO_BANCO = process.env.ATALHO_DB ?? path.join(diretorioDeDados(), 'atalho.db');
 
 function novoId(): string {
   return globalThis.crypto.randomUUID();
@@ -31,11 +41,9 @@ function abrir() {
   // banco ao mesmo tempo; sem isso a migration concorrente dá SQLITE_BUSY.
   sqlite.pragma('busy_timeout = 10000');
 
-  const migration = fs.readFileSync(
-    path.join(process.cwd(), 'drizzle', '0000_init.sql'),
-    'utf8',
-  );
-  sqlite.exec(migration);
+  // A DDL é uma constante do módulo, não um arquivo lido em disco: assim o
+  // app empacotado não depende do layout de pastas do build.
+  sqlite.exec(DDL);
 
   const db = drizzle(sqlite, { schema });
   semear(sqlite);

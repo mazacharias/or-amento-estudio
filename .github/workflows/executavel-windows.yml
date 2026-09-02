@@ -1,0 +1,50 @@
+# Gera o executável do app para Windows.
+#
+# O instalador NSIS é um binário de 32 bits: montá-lo fora do Windows exigiria
+# wine de 32 bits. Aqui o build roda num runner Windows de verdade, então saem
+# o instalador e a versão portátil, sem gambiarra de emulação.
+#
+# Rodar: aba Actions → "Executável Windows" → Run workflow. Os arquivos ficam
+# em Artifacts, no fim da execução.
+
+name: Executável Windows
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  empacotar:
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Testes
+        run: npm test
+
+      - name: Empacotar
+        run: npm run empacotar:windows
+
+      - name: Publicar os executáveis
+        uses: actions/upload-artifact@v4
+        with:
+          name: atalho-orcamentos-windows
+          path: |
+            build/dist/*.exe
+          if-no-files-found: error
+          retention-days: 30

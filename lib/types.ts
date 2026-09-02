@@ -17,6 +17,7 @@ export interface ConfigEstudio {
   telefone: string;
   site: string;
   endereco: string;
+  /** Data URI (image/png|jpeg|webp) do logo, guardado no próprio banco. */
   logoPath: string | null;
   moedaPadrao: Moeda;
   custosFixosMensais: number; // centavos

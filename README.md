@@ -33,6 +33,50 @@ npm run typecheck
 npm run db:push    # opcional: aplicar o schema Drizzle via drizzle-kit
 ```
 
+## Executável para Windows
+
+O app roda como aplicativo de janela própria (Electron), sem terminal e sem
+navegador: o processo principal sobe o servidor Next numa porta livre do
+loopback e abre a janela apontada para ele. Nada é exposto para fora da
+máquina.
+
+**Baixar pronto:** aba *Actions* → workflow **Executável Windows** → *Run
+workflow* → ao terminar, os arquivos estão em *Artifacts*:
+
+- `Atalho-Orcamentos-Instalador-<versão>.exe` — instala, cria atalho no menu
+  Iniciar e na área de trabalho.
+- `Atalho-Orcamentos-Portatil-<versão>.exe` — roda sem instalar.
+
+**Gerar localmente:** `npm run empacotar:windows`. Num host Windows saem o
+instalador e o portátil; em Linux ou macOS sai só o ZIP portátil, porque o
+instalador NSIS é um executável de 32 bits e precisaria de wine de 32 bits para
+ser montado fora do Windows.
+
+Os dados do app empacotado (banco e logo) ficam em
+`%APPDATA%\Atalho Orçamentos`, não na pasta de instalação — que no Windows não
+é gravável. O log do servidor fica na mesma pasta, em `servidor.log`, e é para
+onde apontar se algo não subir.
+
+### Como o pacote é montado
+
+`scripts/empacotar-windows.mjs` monta tudo explicitamente, em vez de deixar o
+electron-builder adivinhar. Três detalhes que custaram caro e estão resolvidos
+lá:
+
+1. **O binário nativo do SQLite.** O `better-sqlite3` é compilado por ABI: o
+   binário instalado na máquina de build é do Node, mas quem executa o servidor
+   é o runtime do Electron, com outra ABI (130, no Electron 33). O script baixa
+   o prebuild oficial `electron-v130-win32-x64` e substitui o arquivo.
+2. **A poda do electron-builder.** Tanto `files` quanto `extraResources`
+   aplicam a poda de `node_modules` por dependências declaradas e ignoram
+   pastas com ponto — o que apagaria `.next` e todo o `node_modules` do
+   standalone. Por isso o empacotamento é em três fases: `--dir`, cópia do
+   servidor por nossa conta, e só então a montagem dos alvos com
+   `--prepackaged`.
+3. **As fontes do pdfkit.** O `@react-pdf` monta caminhos de arquivo em runtime,
+   coisa que o tracer do Next não enxerga; sem copiar os pacotes inteiros, a
+   rota de PDF quebraria com `MODULE_NOT_FOUND` só no app empacotado.
+
 ## Como o preço é formado
 
 ```
@@ -109,12 +153,17 @@ Ambos saem por `/api/orcamentos/[id]/pdf`, com o nome
 4. **Tipografia do PDF em Helvetica.** Registrar Inter exigiria baixar o arquivo
    da fonte em build ou runtime; a UI usa Inter quando disponível no sistema, com
    fallback, e o PDF usa uma família embutida no renderer.
-5. **Sem `react-hook-form`.** O spec o lista, mas o painel lateral do wizard
+5. **O logo é guardado no banco, não em `./public/brand`.** O spec pede o
+   arquivo em disco, mas no app empacotado a pasta de instalação não é
+   gravável. Ele vira um data URI na linha de configuração (limite de 2 MB,
+   PNG/JPG/WEBP) — o PDF desenha direto e o logo passa a viajar junto do backup
+   do banco. SVG deixou de ser aceito porque o renderer do PDF não desenha SVG.
+6. **Sem `react-hook-form`.** O spec o lista, mas o painel lateral do wizard
    precisa recalcular preço e margem *a cada tecla* a partir de uma única fonte
    de verdade — o store do Zustand, que também é o que persiste o rascunho. Com
    RHF haveria dois donos do mesmo estado. Os formulários são controlados e a
    validação de borda continua em zod (`lib/validation.ts`), como pedido.
-6. **Listas do orçamento em colunas JSON.** O orçamento é sempre lido e escrito
+7. **Listas do orçamento em colunas JSON.** O orçamento é sempre lido e escrito
    inteiro; os campos que a lista e o dashboard filtram ou somam (`preco_final`,
    `total_horas`, `margem_real`, `valor_hora_efetivo`) ficam denormalizados em
    colunas próprias no salvamento.

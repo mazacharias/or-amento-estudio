@@ -1,0 +1,51 @@
+# Configuração do executável Windows.
+#
+# A pasta empacotada é montada por scripts/empacotar-windows.mjs, que copia
+# este arquivo para dentro dela e roda o electron-builder de lá — por isso os
+# caminhos são relativos a `build/app-windows`, não à raiz do repositório.
+appId: studio.atalho.orcamentos
+productName: Atalho Orçamentos
+copyright: Atalho
+electronVersion: 33.4.11
+
+directories:
+  output: ../dist
+  buildResources: ..
+
+# asar desligado: o better-sqlite3 é nativo e o Node não carrega .node de
+# dentro de um asar.
+asar: false
+
+# Só o processo principal do Electron entra por aqui.
+#
+# O servidor Next NÃO é declarado: o empacotador o copia para
+# `resources/servidor` depois do `--dir` e antes de montar os alvos. Tanto
+# "files" quanto "extraResources" aplicam a poda de node_modules e ignoram
+# pastas com ponto, o que apagaria `.next` e todas as dependências do
+# standalone.
+files:
+  - electron/**/*
+  - package.json
+
+win:
+  icon: ../icone.ico
+  # Os alvos efetivos vêm da linha de comando (ver scripts/empacotar-windows.mjs):
+  # nsis + portable no Windows, zip nos demais hosts.
+  target:
+    - target: nsis
+      arch: [x64]
+  artifactName: Atalho-Orcamentos-${version}-win-x64.${ext}
+
+# Instalador enxuto: pergunta a pasta, cria atalhos e abre o app no fim.
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Atalho Orçamentos
+  artifactName: Atalho-Orcamentos-Instalador-${version}.${ext}
+  runAfterFinish: true
+
+portable:
+  artifactName: Atalho-Orcamentos-Portatil-${version}.${ext}

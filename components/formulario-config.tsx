@@ -8,7 +8,7 @@ import { InputMoeda, InputNumero, InputPercentual } from '@/components/ui/inputs
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert } from '@/components/ui/alert';
 import { Valor } from '@/components/valor';
-import { salvarConfigAction, salvarLogoAction } from '@/app/actions';
+import { removerLogoAction, salvarConfigAction, salvarLogoAction } from '@/app/actions';
 import { calcularCustoHoraFixo } from '@/lib/pricing';
 import { formatarMoeda } from '@/lib/money';
 import { MOEDAS, type ConfigEstudio, type ItemCustoFixo } from '@/lib/types';
@@ -92,11 +92,15 @@ export function FormularioConfig({ inicial }: { inicial: ConfigEstudio }) {
             <Campo label="Endereço" className="sm:col-span-2">
               <Input value={config.endereco} onChange={(e) => set('endereco', e.target.value)} />
             </Campo>
-            <Campo label="Logo" dica="Salvo em ./public/brand — usado na UI e no PDF." className="sm:col-span-2">
+            <Campo
+              label="Logo"
+              dica="PNG, JPG ou WEBP até 2 MB. Guardado no próprio banco e usado na capa do PDF."
+              className="sm:col-span-2"
+            >
               <div className="flex items-center gap-3">
                 <input
                   type="file"
-                  accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                  accept="image/png,image/jpeg,image/webp"
                   className="campo file:mr-3 file:rounded file:border-0 file:bg-tinta/5 file:px-2 file:py-1 file:text-xs"
                   onChange={(e) => {
                     const arquivo = e.target.files?.[0];
@@ -104,8 +108,20 @@ export function FormularioConfig({ inicial }: { inicial: ConfigEstudio }) {
                   }}
                 />
                 {config.logoPath ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={config.logoPath} alt="Logo do estúdio" className="h-10 w-auto" />
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={config.logoPath} alt="Logo do estúdio" className="h-10 w-auto" />
+                    <Button
+                      variant="fantasma"
+                      size="sm"
+                      onClick={async () => {
+                        await removerLogoAction();
+                        set('logoPath', null);
+                      }}
+                    >
+                      Remover
+                    </Button>
+                  </>
                 ) : null}
               </div>
             </Campo>
