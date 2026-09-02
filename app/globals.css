@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Paleta da Atalho em canais RGB, para o Tailwind aplicar opacidade.
+ * Os valores espelham `lib/brand.ts` — mudou lá, muda aqui.
+ */
+:root {
+  --c-tinta: 17 17 17;
+  --c-papel: 250 250 248;
+  --c-acento: 47 107 255;
+  --c-sutil: 107 107 107;
+  --c-positivo: 14 124 90;
+  --c-alerta: 181 71 8;
+  --c-critico: 180 35 24;
+  --c-linha: 225 225 220;
+  --c-superficie: 255 255 255;
+  color-scheme: light;
+}
+
+.dark {
+  --c-tinta: 242 242 240;
+  --c-papel: 14 14 15;
+  --c-acento: 110 155 255;
+  --c-sutil: 154 154 150;
+  --c-positivo: 61 191 147;
+  --c-alerta: 232 145 60;
+  --c-critico: 249 112 102;
+  --c-linha: 42 42 44;
+  --c-superficie: 24 24 26;
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    /* Números monetários alinhados e comparáveis em qualquer tabela. */
+    font-variant-numeric: tabular-nums;
+  }
+
+  body {
+    @apply bg-papel text-tinta antialiased;
+  }
+
+  ::selection {
+    @apply bg-acento/20;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-titulo tracking-tight;
+  }
+
+  /* A tipografia é a estrutura: números sempre tabulares e à direita. */
+  .num {
+    @apply font-mono tabular-nums text-right;
+  }
+
+  [type='number']::-webkit-inner-spin-button,
+  [type='number']::-webkit-outer-spin-button {
+    @apply appearance-none m-0;
+  }
+}
+
+@layer components {
+  .campo {
+    @apply w-full rounded-marca border border-linha bg-superficie px-3 py-2 text-sm
+      outline-none transition placeholder:text-sutil/70
+      focus:border-acento focus:ring-2 focus:ring-acento/20
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .rotulo {
+    @apply block text-2xs font-medium uppercase tracking-wider text-sutil;
+  }
+
+  .cartao {
+    @apply rounded-marca border border-linha bg-superficie;
+  }
+
+  .divisor {
+    @apply border-t border-linha;
+  }
+}
+
+@media print {
+  .sem-impressao {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}
