@@ -305,7 +305,12 @@ export function calcular(entrada: EntradaCalculo): ResultadoCalculo {
     }),
     detalheEquipamentos,
     detalheSoftwares,
-    alertaMargem: avaliarMargem(margemReal, entrada.margemMinimaAceitavel, entrada.percentualDesconto),
+    alertaMargem: avaliarMargem(
+      margemReal,
+      entrada.margemMinimaAceitavel,
+      entrada.percentualDesconto,
+      subtotalCustos,
+    ),
     capacidade: {
       horasDisponiveis,
       excedeCapacidade: horasDisponiveis > 0 && totalHoras > horasDisponiveis,
@@ -339,7 +344,16 @@ function montarCascata(v: {
   return etapas;
 }
 
-function avaliarMargem(margemReal: number, minima: number, desconto: number): Alerta {
+function avaliarMargem(
+  margemReal: number,
+  minima: number,
+  desconto: number,
+  subtotalCustos: Cents,
+): Alerta {
+  // Orçamento em branco não tem margem ruim — tem orçamento em branco.
+  if (subtotalCustos === 0) {
+    return { nivel: 'ok', mensagem: 'Sem custos lançados ainda — preencha as horas para ver a margem.' };
+  }
   if (margemReal < 0) {
     return {
       nivel: 'critico',

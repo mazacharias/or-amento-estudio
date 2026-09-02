@@ -27,6 +27,9 @@ function abrir() {
   const sqlite = new Database(CAMINHO_BANCO);
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
+  // O build do Next coleta as páginas em processos paralelos, que abrem o
+  // banco ao mesmo tempo; sem isso a migration concorrente dá SQLITE_BUSY.
+  sqlite.pragma('busy_timeout = 10000');
 
   const migration = fs.readFileSync(
     path.join(process.cwd(), 'drizzle', '0000_init.sql'),
@@ -80,10 +83,32 @@ function semear(sqlite: Database.Database) {
 
 // Em dev o Next recarrega os módulos a cada edição; guardar a conexão no
 // globalThis evita abrir um handle novo do SQLite a cada hot reload.
-const global_ = globalThis as unknown as { __atalhoDb?: ReturnType<typeof abrir> };
-const conexao = global_.__atalhoDb ?? abrir();
-if (process.env.NODE_ENV !== 'production') global_.__atalhoDb = conexao;
+const global_ = globalThis as unknown as { __atalhoDb?: Conexao };
 
-export const db = conexao.db;
-export const sqlite = conexao.sqlite;
+type Conexao = ReturnType<typeof abrir>;
+
+/**
+ * Conexão preguiçosa: importar este módulo não abre o banco. Isso mantém o
+ * `next build` — que carrega as rotas só para inspecioná-las — longe do
+ * arquivo do SQLite.
+ */
+function conectar(): Conexao {
+  if (!global_.__atalhoDb) global_.__atalhoDb = abrir();
+  return global_.__atalhoDb;
+}
+
+type DB = Conexao['db'];
+
+export const db = new Proxy({} as DB, {
+  get(_alvo, propriedade) {
+    const real = conectar().db as unknown as Record<string | symbol, unknown>;
+    const valor = real[propriedade];
+    return typeof valor === 'function' ? valor.bind(real) : valor;
+  },
+});
+
+export function conexaoSqlite() {
+  return conectar().sqlite;
+}
+
 export { schema };

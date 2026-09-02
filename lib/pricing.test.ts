@@ -317,3 +317,13 @@ describe('dinheiro é sempre inteiro', () => {
     expect(Math.abs(soma - total)).toBeLessThanOrEqual(2); // tolerância de arredondamento
   });
 });
+
+describe('estado vazio', () => {
+  it('orçamento em branco não acusa margem ruim', () => {
+    const c = ok(cenarioAceitacao({ horas: [], equipamentos: [], softwares: [], terceiros: [], despesas: [] }));
+    expect(c.subtotalCustos).toBe(0);
+    expect(c.precoFinal).toBe(0);
+    expect(c.alertaMargem.nivel).toBe('ok');
+    expect(c.alertaMargem.mensagem).toContain('Sem custos lançados');
+  });
+});
