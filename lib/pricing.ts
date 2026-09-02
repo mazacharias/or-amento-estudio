@@ -66,7 +66,13 @@ export interface Alerta {
 export interface EtapaCascata {
   rotulo: string;
   valor: Cents;
-  tipo: 'custo' | 'acrescimo' | 'total';
+  /**
+   * 'custo' e 'acrescimo' empilham e somam exatamente o 'total'. O 'desconto'
+   * NÃO entra na soma: imposto, taxa e margem já são calculados sobre o preço
+   * com desconto. Ele é a distância entre o preço cheio e o preço final, e o
+   * gráfico o desenha nessa faixa.
+   */
+  tipo: 'custo' | 'acrescimo' | 'desconto' | 'total';
 }
 
 export interface DetalheLinha {
@@ -338,7 +344,7 @@ function montarCascata(v: {
     { rotulo: 'Margem', valor: v.lucro, tipo: 'acrescimo' },
   ];
   if (v.desconto !== 0) {
-    etapas.push({ rotulo: 'Desconto', valor: -v.desconto, tipo: 'acrescimo' });
+    etapas.push({ rotulo: 'Desconto', valor: -v.desconto, tipo: 'desconto' });
   }
   etapas.push({ rotulo: 'Preço final', valor: v.precoComDesconto, tipo: 'total' });
   return etapas;

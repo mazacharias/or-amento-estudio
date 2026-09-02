@@ -308,13 +308,17 @@ describe('dinheiro é sempre inteiro', () => {
     for (const v of monetarios) expect(Number.isInteger(v)).toBe(true);
   });
 
-  it('a cascata fecha no preço final', () => {
-    const c = ok(cenarioAceitacao());
-    const soma = c.cascata
-      .filter((e) => e.tipo !== 'total')
-      .reduce((acc, e) => acc + e.valor, 0);
-    const total = c.cascata.find((e) => e.tipo === 'total')!.valor;
-    expect(Math.abs(soma - total)).toBeLessThanOrEqual(2); // tolerância de arredondamento
+  it('a cascata fecha no preço final, com e sem desconto', () => {
+    for (const desconto of [0, 0.2, 0.35]) {
+      const c = ok(cenarioAceitacao({ percentualDesconto: desconto }));
+      // O desconto não empilha: imposto, taxa e margem já saem do preço com desconto.
+      const soma = c.cascata
+        .filter((e) => e.tipo === 'custo' || e.tipo === 'acrescimo')
+        .reduce((acc, e) => acc + e.valor, 0);
+      const total = c.cascata.find((e) => e.tipo === 'total')!.valor;
+      expect(Math.abs(soma - total)).toBeLessThanOrEqual(2); // tolerância de arredondamento
+      expect(total).toBe(c.precoComDesconto);
+    }
   });
 });
 

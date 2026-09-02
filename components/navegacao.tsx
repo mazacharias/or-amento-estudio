@@ -18,7 +18,7 @@ const ITENS = [
 export function Navegacao() {
   const caminho = usePathname();
   return (
-    <header className="sem-impressao sticky top-0 z-30 border-b border-linha bg-papel/85 backdrop-blur">
+    <header className="sem-impressao sticky top-0 z-30 border-b border-linha bg-papel/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-[1400px] items-center gap-8 px-6 py-3">
         <Link href="/" className="flex items-baseline gap-2">
           <span className="text-base font-semibold tracking-tight">{brand.nome}</span>

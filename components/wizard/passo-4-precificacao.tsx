@@ -187,7 +187,10 @@ export function Passo4Precificacao({
 
 /** Cascata custo → contingência → imposto → taxa → margem → preço. */
 function Cascata({ calculo, moeda }: { calculo: Calculo; moeda: string }) {
-  const total = Math.max(calculo.precoComDesconto, 1);
+  // A escala é o preço cheio: com desconto, a barra do total encolhe dentro
+  // dela e a faixa descontada fica visível à direita.
+  const escala = Math.max(calculo.precoFinal, calculo.precoComDesconto, 1);
+  const pct = (valor: number) => Math.min(100, Math.max(0, (valor / escala) * 100));
   let acumulado = 0;
 
   return (
@@ -195,31 +198,41 @@ function Cascata({ calculo, moeda }: { calculo: Calculo; moeda: string }) {
       <h3 className="text-sm font-medium">Do custo ao preço</h3>
       <div className="space-y-1.5">
         {calculo.cascata.map((etapa) => {
-          const base = acumulado;
-          if (etapa.tipo !== 'total') acumulado += etapa.valor;
-          const largura = Math.min(100, Math.abs(etapa.valor / total) * 100);
-          const deslocamento = etapa.tipo === 'total' ? 0 : Math.min(100, (Math.min(base, base + etapa.valor) / total) * 100);
+          let inicio: number;
+          let largura: number;
+          if (etapa.tipo === 'total') {
+            inicio = 0;
+            largura = pct(calculo.precoComDesconto);
+          } else if (etapa.tipo === 'desconto') {
+            // Desenhado da ponta do preço final até o preço cheio.
+            inicio = pct(calculo.precoComDesconto);
+            largura = pct(Math.abs(etapa.valor));
+          } else {
+            const de = acumulado;
+            acumulado += etapa.valor;
+            inicio = pct(Math.min(de, acumulado));
+            largura = pct(Math.abs(etapa.valor));
+          }
           return (
             <div key={etapa.rotulo} className="grid grid-cols-[150px_1fr_120px] items-center gap-3 text-xs">
               <span className={cn('text-sutil', etapa.tipo === 'total' && 'font-medium text-tinta')}>
                 {etapa.rotulo}
               </span>
-              <div className="h-4 overflow-hidden rounded bg-tinta/[0.04]">
+              <div className="relative h-4 overflow-hidden rounded bg-tinta/[0.04]">
                 <div
                   className={cn(
-                    'h-full rounded',
+                    'absolute inset-y-0 rounded',
                     etapa.tipo === 'total'
                       ? 'bg-acento'
-                      : etapa.valor < 0
-                        ? 'bg-critico/60'
-                        : etapa.tipo === 'custo'
-                          ? 'bg-tinta/40'
-                          : 'bg-tinta/20',
+                      : etapa.tipo === 'desconto'
+                        ? 'bg-critico/50'
+                        : etapa.valor < 0
+                          ? 'bg-critico/60'
+                          : etapa.tipo === 'custo'
+                            ? 'bg-tinta/40'
+                            : 'bg-tinta/20',
                   )}
-                  style={{
-                    width: `${etapa.tipo === 'total' ? 100 : largura}%`,
-                    marginLeft: `${deslocamento}%`,
-                  }}
+                  style={{ left: `${inicio}%`, width: `${Math.max(largura, 0.6)}%` }}
                 />
               </div>
               <span
