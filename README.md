@@ -109,7 +109,12 @@ Ambos saem por `/api/orcamentos/[id]/pdf`, com o nome
 4. **Tipografia do PDF em Helvetica.** Registrar Inter exigiria baixar o arquivo
    da fonte em build ou runtime; a UI usa Inter quando disponível no sistema, com
    fallback, e o PDF usa uma família embutida no renderer.
-5. **Listas do orçamento em colunas JSON.** O orçamento é sempre lido e escrito
+5. **Sem `react-hook-form`.** O spec o lista, mas o painel lateral do wizard
+   precisa recalcular preço e margem *a cada tecla* a partir de uma única fonte
+   de verdade — o store do Zustand, que também é o que persiste o rascunho. Com
+   RHF haveria dois donos do mesmo estado. Os formulários são controlados e a
+   validação de borda continua em zod (`lib/validation.ts`), como pedido.
+6. **Listas do orçamento em colunas JSON.** O orçamento é sempre lido e escrito
    inteiro; os campos que a lista e o dashboard filtram ou somam (`preco_final`,
    `total_horas`, `margem_real`, `valor_hora_efetivo`) ficam denormalizados em
    colunas próprias no salvamento.
