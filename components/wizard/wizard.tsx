@@ -46,11 +46,13 @@ export function Wizard({
   const router = useRouter();
   const { orcamento, passo, visitados, sujo, salvoEm, iniciar, atualizar, irPara, marcarSalvo } = useWizard();
   const [hidratado, setHidratado] = React.useState(false);
+  const [retomado, setRetomado] = React.useState(false);
 
   React.useEffect(() => {
     const persistido = useWizard.getState().orcamento;
     const retomavel = retomarRascunho && persistido && persistido.status === 'rascunho';
     if (!retomavel) iniciar(orcamentoInicial, true);
+    else setRetomado(true);
     setHidratado(true);
     // Só na montagem: depois disso o estado do wizard manda.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -107,6 +109,25 @@ export function Wizard({
 
   return (
     <div className="space-y-6">
+      {retomado ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-marca border border-acento/30 bg-acento/5 px-4 py-2.5 text-sm">
+          <span>
+            Rascunho recuperado: <strong className="font-mono">{orcamento.codigo}</strong>
+            {orcamento.titulo ? ` · ${orcamento.titulo}` : ''}
+          </span>
+          <Button
+            size="sm"
+            variant="fantasma"
+            onClick={() => {
+              iniciar(orcamentoInicial, true);
+              setRetomado(false);
+            }}
+          >
+            Começar um orçamento em branco
+          </Button>
+        </div>
+      ) : null}
+
       <BarraProgresso passo={passo} visitados={visitados} onIr={irPara} />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">

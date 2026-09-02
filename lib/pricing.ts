@@ -197,8 +197,8 @@ export function calcular(entrada: EntradaCalculo): ResultadoCalculo {
           `taxa (${pct(entrada.taxaPagamento)}) somam ${pct(
             entrada.margemDesejada + entrada.aliquotaImposto + entrada.taxaPagamento,
           )} do preço de venda. ` +
-          `O divisor resultante (${divisor.toFixed(2)}) é inviável: o preço tenderia ao infinito. ` +
-          `Reduza a margem ou revise o regime tributário até o divisor passar de ${DIVISOR_MINIMO.toFixed(2)}.`,
+          `O divisor resultante (${virgula(divisor)}) é inviável: o preço tenderia ao infinito. ` +
+          `Reduza a margem ou revise o regime tributário até o divisor passar de ${virgula(DIVISOR_MINIMO)}.`,
       },
     };
   }
@@ -382,6 +382,10 @@ function sugerirContingencia(entrada: EntradaCalculo): string | null {
     .filter(Boolean)
     .join(' e ');
   return `Projeto com ${motivo}: considere contingência entre 15% e 20%.`;
+}
+
+function virgula(n: number): string {
+  return n.toFixed(2).replace('.', ',');
 }
 
 function pct(decimal: number): string {
