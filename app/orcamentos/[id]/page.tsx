@@ -82,7 +82,7 @@ export default async function VerOrcamento({ params }: { params: Promise<{ id: s
               href={`/api/orcamentos/${orcamento.id}/pdf?tipo=cliente`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-9 items-center rounded-marca bg-acento px-3 text-sm font-medium text-white hover:bg-acento/90"
+              className="inline-flex h-9 items-center rounded-marca bg-acento px-3 text-sm font-medium text-white hover:bg-acento/90 dark:text-papel"
             >
               PDF da proposta
             </a>

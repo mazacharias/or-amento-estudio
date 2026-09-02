@@ -1,15 +1,42 @@
-import { StyleSheet } from '@react-pdf/renderer';
+import fs from 'node:fs';
+import path from 'node:path';
+import { Font, StyleSheet } from '@react-pdf/renderer';
 import { brand } from '../brand';
 
 /**
  * Estilos compartilhados pelos dois PDFs. As cores vêm de `lib/brand.ts` —
  * mudar a marca é mudar um arquivo só.
  *
- * Tipografia: Helvetica, uma das famílias embutidas no @react-pdf/renderer.
- * Registrar Inter exigiria baixar o arquivo da fonte, e o app precisa
- * funcionar sem rede.
+ * Tipografia: Inter, os mesmos arquivos que a interface usa, lidos de
+ * `public/fonts`. Se por algum motivo não estiverem lá (build recortado, por
+ * exemplo), o PDF cai para Helvetica em vez de falhar.
  */
 export const cores = brand.cores;
+
+/** Registra a Inter para o PDF; devolve a família que os estilos devem usar. */
+function registrarFonte(): string {
+  const dir = path.join(process.cwd(), 'public', 'fonts');
+  const pesos: Array<[number, string]> = [
+    [400, 'Inter-Regular.ttf'],
+    [600, 'Inter-SemiBold.ttf'],
+    [700, 'Inter-Bold.ttf'],
+  ];
+  const fontes = pesos
+    .map(([fontWeight, arquivo]) => ({ fontWeight, src: path.join(dir, arquivo) }))
+    .filter((f) => fs.existsSync(f.src));
+  if (fontes.length !== pesos.length) return 'Helvetica';
+  try {
+    Font.register({ family: 'Inter', fonts: fontes });
+    // A Inter tem hifenização própria do idioma; desligamos a heurística do
+    // renderer para não quebrar palavras em português no meio.
+    Font.registerHyphenationCallback((palavra) => [palavra]);
+    return 'Inter';
+  } catch {
+    return 'Helvetica';
+  }
+}
+
+export const FAMILIA = registrarFonte();
 
 export const estilos = StyleSheet.create({
   pagina: {
@@ -17,27 +44,27 @@ export const estilos = StyleSheet.create({
     paddingBottom: 64,
     paddingHorizontal: 56,
     fontSize: 9.5,
-    fontFamily: 'Helvetica',
+    fontFamily: FAMILIA,
     color: cores.tinta,
     backgroundColor: '#FFFFFF',
     lineHeight: 1.5,
   },
   capaTopo: { marginBottom: 'auto' },
   logo: { height: 28, marginBottom: 24, objectFit: 'contain', alignSelf: 'flex-start' },
-  marcaTexto: { fontSize: 16, fontFamily: 'Helvetica-Bold', letterSpacing: -0.4 },
-  capaTitulo: { fontSize: 26, fontFamily: 'Helvetica-Bold', letterSpacing: -0.8, marginBottom: 8 },
+  marcaTexto: { fontSize: 16, fontWeight: 600, letterSpacing: -0.4 },
+  capaTitulo: { fontSize: 26, fontWeight: 600, letterSpacing: -0.8, marginBottom: 8 },
   capaCliente: { fontSize: 12, color: cores.sutil, marginBottom: 32 },
   secaoTitulo: {
     fontSize: 8,
-    fontFamily: 'Helvetica-Bold',
+    fontWeight: 600,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
     color: cores.sutil,
     marginBottom: 8,
   },
   secao: { marginBottom: 22 },
-  h2: { fontSize: 13, fontFamily: 'Helvetica-Bold', marginBottom: 6, letterSpacing: -0.2 },
-  h3: { fontSize: 10.5, fontFamily: 'Helvetica-Bold', marginBottom: 3 },
+  h2: { fontSize: 13, fontWeight: 600, marginBottom: 6, letterSpacing: -0.2 },
+  h3: { fontSize: 10.5, fontWeight: 600, marginBottom: 3 },
   paragrafo: { marginBottom: 6, textAlign: 'justify' },
   sutil: { color: cores.sutil },
   item: { flexDirection: 'row', marginBottom: 2.5 },
@@ -55,8 +82,8 @@ export const estilos = StyleSheet.create({
     paddingBottom: 3,
     marginBottom: 2,
   },
-  th: { fontSize: 7.5, fontFamily: 'Helvetica-Bold', letterSpacing: 0.6, textTransform: 'uppercase', color: cores.sutil },
-  num: { fontFamily: 'Helvetica', textAlign: 'right' },
+  th: { fontSize: 7.5, fontWeight: 600, letterSpacing: 0.6, textTransform: 'uppercase', color: cores.sutil },
+  num: { fontFamily: FAMILIA, textAlign: 'right' },
   destaqueCaixa: {
     borderWidth: 1,
     borderColor: cores.acento,
@@ -64,7 +91,7 @@ export const estilos = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
   },
-  destaqueValor: { fontSize: 24, fontFamily: 'Helvetica-Bold', color: cores.acento, letterSpacing: -0.6 },
+  destaqueValor: { fontSize: 24, fontWeight: 600, color: cores.acento, letterSpacing: -0.6 },
   rodape: {
     position: 'absolute',
     bottom: 28,
@@ -85,7 +112,7 @@ export const estilos = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
     fontSize: 8,
-    fontFamily: 'Helvetica-Bold',
+    fontWeight: 600,
     letterSpacing: 1,
     marginBottom: 18,
   },

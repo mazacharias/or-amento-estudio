@@ -12,7 +12,7 @@ const botao = cva(
     variants: {
       variant: {
         // Cor de acento só na ação primária — direção do §7.
-        primario: 'bg-acento text-white hover:bg-acento/90',
+        primario: 'bg-acento text-white hover:bg-acento/90 dark:text-papel',
         secundario: 'border border-linha bg-superficie text-tinta hover:bg-tinta/5',
         fantasma: 'text-tinta hover:bg-tinta/5',
         perigo: 'border border-critico/30 text-critico hover:bg-critico/10',

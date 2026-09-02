@@ -174,7 +174,7 @@ function Grade({ itens }: { itens: Array<[string, string]> }) {
       {itens.map(([rotulo, valor]) => (
         <View key={rotulo} style={{ width: '33%', marginBottom: 8 }}>
           <Text style={estilos.th}>{rotulo}</Text>
-          <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold' }}>{valor}</Text>
+          <Text style={{ fontSize: 11, fontWeight: 600 }}>{valor}</Text>
         </View>
       ))}
     </View>
@@ -222,10 +222,10 @@ function Tabela({
       ))}
       {total ? (
         <View style={{ flexDirection: 'row', paddingTop: 4 }}>
-          <Text style={{ flex: flex.slice(0, -1).reduce((a, b) => a + b, 0), fontFamily: 'Helvetica-Bold' }}>
+          <Text style={{ flex: flex.slice(0, -1).reduce((a, b) => a + b, 0), fontWeight: 600 }}>
             Total
           </Text>
-          <Text style={[estilos.num, { flex: flex[flex.length - 1] ?? 1, fontFamily: 'Helvetica-Bold' }]}>{total}</Text>
+          <Text style={[estilos.num, { flex: flex[flex.length - 1] ?? 1, fontWeight: 600 }]}>{total}</Text>
         </View>
       ) : null}
     </View>

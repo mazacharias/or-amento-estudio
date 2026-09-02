@@ -10,7 +10,7 @@ export const brand = {
   cores: {
     tinta: '#111111',
     papel: '#FAFAF8',
-    acento: '#2F6BFF',
+    acento: '#182889',
     sutil: '#6B6B6B',
     positivo: '#0E7C5A',
     alerta: '#B54708',
@@ -24,7 +24,7 @@ export const brand = {
 export const brandDark = {
   tinta: '#F2F2F0',
   papel: '#0E0E0F',
-  acento: '#6E9BFF',
+  acento: '#7C90E8',
   sutil: '#9A9A96',
   positivo: '#3DBF93',
   alerta: '#E8913C',

@@ -14,7 +14,7 @@ export default function PaginaOrcamentos() {
         acoes={
           <Link
             href="/orcamentos/novo"
-            className="inline-flex h-9 items-center rounded-marca bg-acento px-4 text-sm font-medium text-white transition hover:bg-acento/90"
+            className="inline-flex h-9 items-center rounded-marca bg-acento px-4 text-sm font-medium text-white transition hover:bg-acento/90 dark:text-papel"
           >
             Novo orçamento
           </Link>
